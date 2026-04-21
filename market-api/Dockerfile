@@ -15,6 +15,12 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     DJANGO_SETTINGS_MODULE=market_api.settings \
     DJANGO_DEBUG=0
 
+# DejaVu fonts provide the Indian Rupee glyph (U+20B9) that reportlab's
+# default Type 1 Helvetica lacks. Needed for PDF exports.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends fonts-dejavu-core \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY --from=builder /install /usr/local
 COPY manage.py ./
 COPY market_api ./market_api

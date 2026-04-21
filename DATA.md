@@ -66,7 +66,7 @@ in `/model-info`.
 | `lot_size`                  | int   | Lot area, square feet                |
 | `distance_to_city_center`   | float | Kilometres                           |
 | `school_rating`             | float | Usually 1–10                         |
-| `price`                     | int   | Target variable (USD). Only required in the training CSV; the live `/predict` request does **not** include it. |
+| `price`                     | int   | Target variable (INR). Only required in the training CSV; the live `/predict` request does **not** include it. |
 
 A UTF-8 BOM on the first column is tolerated — both loaders strip it when
 reading the header.
