@@ -250,3 +250,9 @@ Thumbs.db
 *.swo
 .idea/
 .vscode/
+
+# The Python packaging rules above (lib/, build/, dist/) match at any depth
+# and would swallow portal/lib — the Next.js source dir. Re-include it
+# explicitly.
+!portal/lib/
+!portal/lib/**
