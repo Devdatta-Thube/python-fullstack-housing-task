@@ -205,3 +205,48 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# --------------------------------------------------------------------------
+# Project-specific exclusions
+# --------------------------------------------------------------------------
+
+# Private/confidential source material from the task brief.
+# The dataset and task PDF are not ours to redistribute — anyone building
+# the stack must supply their own copy of the CSV (see DATA.md).
+/Interview Tasks Fullstack.pdf
+/House Price Dataset.csv
+/Test Data For Prediction.csv
+
+# Training / runtime datasets baked into service images at build time.
+# Kept out of version control so the repository carries no confidential data.
+ml-api/data/*.csv
+market-api/data/*.csv
+
+# Local working notes and agent-facing instructions. Not part of the
+# shipped project.
+INTERNAL_NOTES.md
+CLAUDE.md
+AGENTS.md
+**/CLAUDE.md
+**/AGENTS.md
+.claude/
+
+# Build outputs / runtime state (already covered by per-dir rules above,
+# listed here for clarity).
+ml-api/artifacts/
+estimator-api/data/*.db
+estimator-api/data/*.db-journal
+market-api/staticfiles/
+
+# Node / Next.js
+node_modules/
+.next/
+*.tsbuildinfo
+
+# OS/editor crud
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
