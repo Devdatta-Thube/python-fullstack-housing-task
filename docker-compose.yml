@@ -1,0 +1,111 @@
+services:
+  ml-api:
+    build: ./ml-api
+    image: housing-ml-api:latest
+    container_name: housing-ml-api
+    ports:
+      - "8000:8000"
+    networks:
+      - housing-net
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/health',timeout=3).status==200 else 1)"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # ──────────────────────────────────────────────────────────────────
+  # Services below are scaffolded in later steps — uncomment as built.
+  # ──────────────────────────────────────────────────────────────────
+
+  estimator-api:
+    build: ./estimator-api
+    container_name: estimator-api
+    ports:
+      - "8001:8000"
+    environment:
+      ML_API_URL: http://ml-api:8000
+    volumes:
+      - estimator-data:/app/data
+    depends_on:
+      ml-api:
+        condition: service_healthy
+    networks:
+      - housing-net
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/health',timeout=3).status==200 else 1)"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  market-api:
+    build: ./market-api
+    container_name: market-api
+    ports:
+      - "8002:8000"
+    environment:
+      ML_API_URL: http://ml-api:8000
+      DJANGO_DEBUG: "0"
+      DJANGO_ALLOWED_HOSTS: market-api,localhost,127.0.0.1
+    depends_on:
+      ml-api:
+        condition: service_healthy
+    networks:
+      - housing-net
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/api/health/',timeout=3).status in (200,503) else 1)"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  portal:
+    build: ./portal
+    container_name: portal
+    ports:
+      - "3000:3000"
+    environment:
+      # Rendered in the browser, so these must be reachable from the host, not the compose network.
+      NEXT_PUBLIC_ESTIMATOR_API_URL: http://localhost:8001
+      NEXT_PUBLIC_MARKET_API_URL: http://localhost:8002
+    depends_on:
+      estimator-api:
+        condition: service_healthy
+      market-api:
+        condition: service_healthy
+    networks:
+      - housing-net
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://localhost:3000/').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+networks:
+  housing-net:
+    driver: bridge
+
+volumes:
+  estimator-data:
