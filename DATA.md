@@ -26,8 +26,8 @@ file, you cannot proceed past this page — the build will halt at the
 Two copies are required, one per service that needs the data:
 
 ```
-ml-api/data/housing.csv          ← training input for the model
-market-api/data/housing.csv      ← aggregates and dataset browser
+backend/ml-api/data/housing.csv          ← training input for the model
+backend/market-api/data/housing.csv      ← aggregates and dataset browser
 ```
 
 Both paths are **already listed in `.gitignore`**. A file placed here will
@@ -37,16 +37,16 @@ The simplest way to put the file in both places at once:
 
 ```bash
 # from the repository root
-mkdir -p ml-api/data market-api/data
-cp /path/to/your/housing.csv ml-api/data/housing.csv
-cp /path/to/your/housing.csv market-api/data/housing.csv
+mkdir -p backend/ml-api/data backend/market-api/data
+cp /path/to/your/housing.csv backend/ml-api/data/housing.csv
+cp /path/to/your/housing.csv backend/market-api/data/housing.csv
 ```
 
 On Windows with WSL, you can copy a file from a Windows path like so:
 
 ```bash
-cp /mnt/c/Users/you/Downloads/housing.csv ml-api/data/housing.csv
-cp /mnt/c/Users/you/Downloads/housing.csv market-api/data/housing.csv
+cp /mnt/c/Users/you/Downloads/housing.csv backend/ml-api/data/housing.csv
+cp /mnt/c/Users/you/Downloads/housing.csv backend/market-api/data/housing.csv
 ```
 
 ## 3. Expected schema
@@ -54,7 +54,7 @@ cp /mnt/c/Users/you/Downloads/housing.csv market-api/data/housing.csv
 The first row of the CSV must be a header. Column names are matched
 case-sensitively. Order within the row does not matter — the loader
 reads by column name — but the *model's* `FEATURE_COLUMNS` order defined
-in `ml-api/app/model.py` is what determines the order of coefficients
+in `backend/ml-api/app/model.py` is what determines the order of coefficients
 in `/model-info`.
 
 | Column                      | Type  | Notes                                |
@@ -75,7 +75,7 @@ reading the header.
 
 ### `ml-api`
 
-- **Build time.** The Dockerfile copies `ml-api/data/housing.csv` into the
+- **Build time.** The Dockerfile copies `backend/ml-api/data/housing.csv` into the
   image and runs `python train.py`. That script:
   1. Loads the CSV with pandas.
   2. Fits a `LinearRegression` on the seven feature columns against
@@ -90,7 +90,7 @@ reading the header.
 
 ### `market-api`
 
-- **Runtime only.** Django loads `market-api/data/housing.csv` into
+- **Runtime only.** Django loads `backend/market-api/data/housing.csv` into
   `LocMemCache` the first time any endpoint that needs it is called
   (`/api/stats/`, `/api/rows/`, `/api/export/*`). Subsequent requests hit
   the cache (TTL controlled by `AGGREGATE_CACHE_TTL`, default 300 s).
@@ -114,7 +114,7 @@ reading the header.
 The stack is not hard-wired to any particular dataset — only to the schema
 in §3. If you want to retrain against a different CSV:
 
-1. Replace both `ml-api/data/housing.csv` and `market-api/data/housing.csv`.
+1. Replace both `backend/ml-api/data/housing.csv` and `backend/market-api/data/housing.csv`.
 2. Rebuild the affected services:
 
    ```bash
@@ -126,11 +126,11 @@ in §3. If you want to retrain against a different CSV:
    training timestamp and metrics.
 
 If your new CSV adds or renames columns, you must also update
-`FEATURE_COLUMNS` in `ml-api/app/model.py`, the Pydantic model in
-`ml-api/app/schemas.py`, the mirrored model in
-`estimator-api/app/schemas.py`, the DRF serializer in
-`market-api/market/serializers.py`, and the zod schema in
-`portal/lib/schemas.ts`. Keep the order identical across all five.
+`FEATURE_COLUMNS` in `backend/ml-api/app/model.py`, the Pydantic model in
+`backend/ml-api/app/schemas.py`, the mirrored model in
+`backend/estimator-api/app/schemas.py`, the DRF serializer in
+`backend/market-api/market/serializers.py`, and the zod schema in
+`frontend/lib/schemas.ts`. Keep the order identical across all five.
 
 ## 6. What `.gitignore` excludes
 
@@ -141,15 +141,15 @@ patterns are excluded at the repository root:
 /Interview Tasks Fullstack.pdf
 /House Price Dataset.csv
 /Test Data For Prediction.csv
-ml-api/data/*.csv
-market-api/data/*.csv
+backend/ml-api/data/*.csv
+backend/market-api/data/*.csv
 ```
 
 If you later need to verify that nothing confidential has slipped in, run:
 
 ```bash
 git status --short --untracked-files=all | \
-  grep -E 'CLAUDE|House Price|Test Data|Interview|data/housing' || echo OK
+  grep -E 'CLAUDE|House Price|Test Data|Interview|backend/(ml|market)-api/data/housing' || echo OK
 ```
 
 A clean `OK` means the data is safely out of the tree.

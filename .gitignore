@@ -219,8 +219,8 @@ __marimo__/
 
 # Training / runtime datasets baked into service images at build time.
 # Kept out of version control so the repository carries no confidential data.
-ml-api/data/*.csv
-market-api/data/*.csv
+backend/ml-api/data/*.csv
+backend/market-api/data/*.csv
 
 # Local working notes and agent-facing instructions. Not part of the
 # shipped project.
@@ -233,10 +233,15 @@ AGENTS.md
 
 # Build outputs / runtime state (already covered by per-dir rules above,
 # listed here for clarity).
-ml-api/artifacts/
-estimator-api/data/*.db
-estimator-api/data/*.db-journal
-market-api/staticfiles/
+backend/ml-api/artifacts/
+backend/estimator-api/data/*.db
+backend/estimator-api/data/*.db-journal
+backend/market-api/staticfiles/
+
+# Docker image tarballs are large binaries — shipped separately, not in git.
+docker-images/*.tar
+docker-images/*.tar.gz
+docker-images/*.zip
 
 # Node / Next.js
 node_modules/
@@ -252,7 +257,7 @@ Thumbs.db
 .vscode/
 
 # The Python packaging rules above (lib/, build/, dist/) match at any depth
-# and would swallow portal/lib — the Next.js source dir. Re-include it
+# and would swallow frontend/lib — the Next.js source dir. Re-include it
 # explicitly.
-!portal/lib/
-!portal/lib/**
+!frontend/lib/
+!frontend/lib/**

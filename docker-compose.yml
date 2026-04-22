@@ -1,6 +1,6 @@
 services:
   ml-api:
-    build: ./ml-api
+    build: ./backend/ml-api
     image: housing-ml-api:latest
     container_name: housing-ml-api
     ports:
@@ -24,7 +24,7 @@ services:
   # ──────────────────────────────────────────────────────────────────
 
   estimator-api:
-    build: ./estimator-api
+    build: ./backend/estimator-api
     container_name: estimator-api
     ports:
       - "8001:8000"
@@ -50,7 +50,7 @@ services:
       start_period: 10s
 
   market-api:
-    build: ./market-api
+    build: ./backend/market-api
     container_name: market-api
     ports:
       - "8002:8000"
@@ -76,7 +76,7 @@ services:
       start_period: 10s
 
   portal:
-    build: ./portal
+    build: ./frontend
     container_name: portal
     ports:
       - "3000:3000"

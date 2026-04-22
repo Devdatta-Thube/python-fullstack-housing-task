@@ -18,7 +18,7 @@ Interactive docs: `http://localhost:8000/docs` (Swagger) and `/redoc`.
 ## Run locally
 
 ```bash
-cd ml-api
+cd backend/ml-api
 python -m venv .venv && source .venv/bin/activate    # on Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 python train.py                 # produces artifacts/model.pkl + metadata.json

@@ -33,7 +33,7 @@ Docker's service DNS.
 ## Run locally (alongside a running ml-api)
 
 ```bash
-cd estimator-api
+cd backend/estimator-api
 python3.12 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
