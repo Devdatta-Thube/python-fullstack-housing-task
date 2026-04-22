@@ -1,80 +1,75 @@
 # `docker-images/` — pre-built Docker images
 
-This folder is the drop-point for **pre-built Docker images** saved as
-`.tar` files. The interview deliverable for Task 1 is the ML API image;
-it is the one you will typically find here.
+The ML API is published as a pre-built Docker image so a reviewer can
+run it without cloning the repo or rebuilding from source. Two
+distribution channels are provided; pick whichever your environment
+allows.
 
-## Why this folder exists
+## Option A — GitHub Container Registry (recommended)
 
-Docker images are usually pulled from a registry (Docker Hub, GHCR,
-etc.). For this interview the image is shared as a file so the
-reviewer does not need a registry account: they just **load** the file
-into their own Docker and run it.
-
-## What is expected inside
-
-| File name                | What it is                                     | Size (approx) |
-|--------------------------|------------------------------------------------|---------------|
-| `housing-ml-api.tar.gz`  | The `ml-api` image (FastAPI + scikit-learn)    | ~150 MB       |
-
-The file is large (binary), so it is **not committed to git** — it is
-transferred separately (attached to the delivery email, or downloaded
-from the link in that email). See the `.gitignore` at the repo root.
-
-If this folder is empty when you clone the repo, that is expected. You
-can either:
-
-- Run the stack from source with `docker compose up --build` from the
-  repo root (recommended — it builds the image locally), **or**
-- Load the `.tar.gz` that was shared with you, then run it (instructions
-  below).
-
-## Running the pre-built image
-
-Assuming you have `housing-ml-api.tar.gz` in this folder:
+The image is hosted on **GHCR** (GitHub's container registry). If your
+machine can reach `ghcr.io`, this is the simplest path — one command
+to download, one command to run:
 
 ```bash
-# 1. Load the image into your local Docker
-docker load -i docker-images/housing-ml-api.tar.gz
+docker pull ghcr.io/devdatta-thube/housing-ml-api:1.0.0
+docker run --rm -p 8000:8000 ghcr.io/devdatta-thube/housing-ml-api:1.0.0
+```
 
-# 2. Confirm it's there
-docker images | grep housing-ml-api
+Then open <http://localhost:8000/docs> — that is the interactive
+Swagger UI where you can try predictions.
 
-# 3. Run it on port 8000
+Image page:
+<https://github.com/Devdatta-Thube/python-fullstack-housing-task/pkgs/container/housing-ml-api>
+
+Available tags:
+- `1.0.0` — pinned to the v1.0.0 Release.
+- `latest` — tracks the most recent build.
+
+## Option B — Offline tarball from a GitHub Release
+
+If `ghcr.io` is blocked or you want an air-gapped copy, download the
+image as a `.tar.gz` from the v1.0.0 Release:
+
+<https://github.com/Devdatta-Thube/python-fullstack-housing-task/releases/tag/v1.0.0>
+
+Look for `housing-ml-api.tar.gz` (~154 MB). Then:
+
+```bash
+docker load -i housing-ml-api.tar.gz
 docker run --rm -p 8000:8000 housing-ml-api:latest
 ```
 
-Then open <http://localhost:8000/docs> — that is the interactive API
-explorer (Swagger UI). You can try predictions from there without
-needing the rest of the stack.
+## What is and is not in this folder
 
-The image already contains the trained model — no further setup needed.
+This folder itself ships no binaries. It is the documented drop-point
+for a local `.tar.gz` copy if you choose to keep one alongside the
+code; `.gitignore` excludes `*.tar` / `*.tar.gz` from version control
+because binary blobs do not belong in git.
 
-## How it fits with the rest of the project
+If you want to regenerate the tarball locally:
+
+```bash
+docker compose build ml-api
+docker save housing-ml-api:latest | gzip > docker-images/housing-ml-api.tar.gz
+```
+
+## How this fits with the rest of the project
 
 ```
-docker-images/housing-ml-api.tar.gz
-     │ docker load
-     ▼
-housing-ml-api:latest  (image in your local Docker)
-     │ docker run
-     ▼
-Running ml-api on port 8000  ◄─── Swagger UI  (http://localhost:8000/docs)
-                               ◄─── Also reachable from estimator-api
-                                    and market-api if you bring those up
-                                    separately.
+   Option A: docker pull from GHCR
+   Option B: docker load from the Release tarball
+                         │
+                         ▼
+   housing-ml-api:latest (or 1.0.0) image in your local Docker
+                         │ docker run -p 8000:8000 ...
+                         ▼
+   ml-api running at http://localhost:8000
+     └─ Swagger UI:    http://localhost:8000/docs
+     └─ Health check:  http://localhost:8000/health
 ```
 
 If you want the full website experience (estimator form + market
 dashboard), run `docker compose up --build -d` from the repo root
 instead — that spins up all four services and wires them together
 automatically.
-
-## Saving a new image (for the submitter)
-
-If you change `ml-api` and need to ship a new tarball:
-
-```bash
-docker compose build ml-api
-docker save housing-ml-api:latest | gzip > docker-images/housing-ml-api.tar.gz
-```
